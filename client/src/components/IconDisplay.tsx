@@ -3,6 +3,7 @@ interface Icon {
   src: string;
   mimeType?: string;
   sizes?: string[];
+  theme?: "light" | "dark";
 }
 
 // Helper type for objects that may have icons
@@ -33,9 +34,34 @@ const IconDisplay = ({
 
   const sizeClass = sizeClasses[size];
 
+  const filterIconsByTheme = (icons: Icon[]): Icon[] => {
+    const isDark = document.documentElement.classList.contains("dark");
+    const currentTheme = isDark ? "dark" : "light";
+
+    // First, try to find icons that match the current theme
+    const themeSpecificIcons = icons.filter(
+      (icon) => icon.theme === currentTheme,
+    );
+    if (themeSpecificIcons.length > 0) {
+      return themeSpecificIcons;
+    }
+
+    // If no theme-specific icons found, return icons with no theme specified (generic icons)
+    const genericIcons = icons.filter((icon) => !icon.theme);
+    if (genericIcons.length > 0) {
+      return genericIcons;
+    }
+
+    // Fallback: return all icons if no matching or generic icons found
+    return icons;
+  };
+
+  // Filter icons based on current theme
+  const filteredIcons = filterIconsByTheme(icons);
+
   return (
     <div className={`flex gap-1 ${className}`}>
-      {icons.map((icon, index) => (
+      {filteredIcons.map((icon, index) => (
         <img
           key={index}
           src={icon.src}
